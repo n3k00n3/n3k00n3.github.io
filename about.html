@@ -1,52 +1,47 @@
-<!DOCTYPE  html>
-<html>
-  <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    <meta charset="UTF-8">
-    <title>n3k00n3 Labs</title>
-    <meta name="viewport" content="width=device-width">
-    <link href="./files/style.css" rel="stylesheet">
-    <link href="./files/colors-dark.css" rel="stylesheet">
-
-  </head>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>About // n3k00n3</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="./files/style.css">
+</head>
 <body>
-  <header id="header">
-  </header>
-
-  <div id="page">
-    <div id="sidebar">
+  <div class="wrapper">
+    <header>
+      <div class="site-title">
+        <a href="/">n3k00n3 // labs</a>
+        <span>about</span>
+      </div>
       <nav>
-        <ul>
-          <li><a href="index.html">Home</a></li>
-          <li><a href="blog.html">Blog</a></li>
-          <li><a href="about.html">About</a></li>
-          <li><a href="https://planet.alexos.org/" target="_blank">Brazilian Security Blogs</a></li>
-        </ul>
+        <a href="index.html">Home</a>
+        <a href="blog.html">Blog</a>
+        <a href="about.html">About</a>
       </nav>
-    </div>
-  
-    <div id="content">
-      <h1 id="about">About</h1>
-      <p>I am Security Researcher living in a Brazilian tropical island.<br>
-        Nowadays my focus is web application flaws and secure coding review. 
-        I really like to find security bugs and I'll use this blog to share with others
-        the discoveries of my adventures done during the spare time I have.
-      </p>
-      <p>If you want to message me: n3k00n3[at]protonmail[dot]com</p>
-    </div>
+    </header>
 
-    <!-- Foot -->
-    <footer id="footer">
-      <p class="copyright">Hack The Planet!</p>
+    <main>
+      <section class="about">
+        <p>
+          <strong>n3k00n3</strong>
+        </p>
+        <p>
+          Sou uma pessoa não binária, pesquisadora de segurança que vive em uma ilha tropical brasileira. Atualmente, meu foco é em falhas de aplicações mobiles, web e revisão de código seguro. Gosto muito de encontrar bugs de segurança e usarei este blog para compartilhar com vocês as descobertas das minhas aventuras realizadas no meu tempo livre.
+        </p>
+        <p>
+          Contato:
+        </p>
+        <ul>
+          <li>Email: <strong>n3k00n3 [at] proton.me</strong></li>
+          <li>GitHub: <a href="https://github.com/n3k00n3" target="_blank" rel="noopener"><strong>@n3k00n3</strong></a></li>
+        </ul>
+      </section>
+    </main>
+
+    <footer>
+      <span>© n3k00n3 – security research.</span>
+      <span>happy hunting.</span>
     </footer>
-    <script src="./files/jquery.min.js"></script>
-    <script src="./files/jquery.mobilemenu.min.js"></script>
-    <script>
-      $(document).ready(function(){
-        $('#sidebar nav ul').mobileMenu({'topOptionText': 'Menu', 'prependTo': '#sidebar nav'});
-      });
-    </script>
   </div>
-
 </body>
 </html>

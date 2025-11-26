@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Dados em Rota de Fuga – n3k00n3 // labs</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="../../files/style.css" rel="stylesheet">
+</head>
+
+<body>
+  <div class="wrapper">
+
+    <header>
+      <div class="site-title">
+        <a href="/">n3k00n3 // labs</a>
+        <span>blog post</span>
+      </div>
+      <nav>
+        <a href="../../index.html">Home</a>
+        <a href="../../blog.html">Blog</a>
+        <a href="../../about.html">About</a>
+      </nav>
+    </header>
+
+    <main class="post-page">
+
+      <!-- header do post -->
+      <section class="post-header-single">
+        <h1 class="post-title-main">Dados em Rota de Fuga</h1>
+        <p class="post-subtitle">Milhões de dados extraviados em um bilhete de viagem.</p>
+        <div class="post-meta">
+          <span>Web Sec</span>
+          <span>API</span>
+          <span>LGPD</span>
+        </div>
+      </section>
+
+      <!-- conteúdo -->
+      <article class="post-body">
+
+        <h3>Quando a curiosidade chama…</h3>
+
+        <p>
+          Tudo o que eu queria era uma viagem… mas acabei encontrando uma vulnerabilidade.
+        </p>
+
+        <p>
+          Sou apaixonado por viajar — então decidi tirar um tempo longe das telas.  
+          Comprei uma passagem, fechei o notebook e fui descansar.
+        </p>
+
+        <p>
+          Mas no meio da noite, aquela curiosidade que só quem trabalha com segurança conhece bateu forte:
+        </p>
+
+        <blockquote><em>“Como será que estão tratando os dados dos usuários?”</em></blockquote>
+
+        <p>
+          Bastou uma análise simples, sem técnicas avançadas:  
+          **nenhuma autenticação e dados sensíveis sendo expostos livremente pela API.**
+        </p>
+
+        <ul>
+          <li>Nenhuma autenticação exigida</li>
+          <li>Apenas um código revelava dados pessoais</li>
+          <li>Possível consulta automatizada em massa</li>
+        </ul>
+
+        <p>
+          A própria empresa afirma que já emitiu <strong>60+ milhões de bilhetes</strong>.  
+          Ou seja: **milhões de pessoas tiveram suas PII expostas**, como:
+        </p>
+
+        <ul>
+          <li>Nome completo</li>
+          <li>CPF</li>
+          <li>Telefone</li>
+          <li>E-mail</li>
+          <li>Endereço</li>
+          <li>Data de nascimento</li>
+          <li>Dados do cartão (nome, validade, BIN + últimos 4)</li>
+        </ul>
+
+        <h3>API1:2023 — Broken Object Level Authorization</h3>
+
+        <p>
+          A API permite acesso direto a objetos sensíveis através de seus IDs — **sem validar se o usuário tem direito ao recurso**.
+        </p>
+
+        <pre><code>GET /web/api/v4/orders/PEDIDO/?clientid=1</code></pre>
+
+        <figure>
+          <img src="../../files/images/dados-rota-fuga/api-response-order.webp" alt="Resposta da API mostrando dados de pedido">
+          <figcaption>Fig.1 – Detalhes do pedido expostos.</figcaption>
+        </figure>
+
+        <figure>
+          <img src="../../files/images/dados-rota-fuga/card-info.webp" alt="Dados do cartão na resposta da API">
+          <figcaption>Fig.2 – Detalhes do cartão de crédito.</figcaption>
+        </figure>
+
+        <p>
+          Além da violação técnica, configura **descumprimento da LGPD**, pois permite acesso não autorizado a dados pessoais e financeiros.
+        </p>
+
+        <h3>API4:2023 — Unrestricted Resource Consumption</h3>
+
+        <p>
+          Os códigos de pedidos possuem apenas **8 caracteres alfanuméricos**.  
+          Isso os torna **enumeráveis e sujeitos a força bruta lenta**, facilmente automatizável.
+        </p>
+
+        <p>
+          A empresa ainda **mascara apenas 1 dígito** quando mostra pedidos no Reclame Aqui.
+        </p>
+
+        <figure>
+          <img src="../../files/images/dados-rota-fuga/reclame-aqui.webp" alt="Exposição de ID de pedido parcialmente mascarado">
+          <figcaption>Fig.3 – ID mascarado… mas nem tanto.</figcaption>
+        </figure>
+
+        <p>
+          Para descobrir o dígito oculto → **apenas 36 tentativas** (0–9 + A–Z).
+        </p>
+
+        <figure>
+          <img src="../../files/images/dados-rota-fuga/order-leak.webp" alt="Código de pedido revelado">
+          <figcaption>Fig.4 – Código de pedido deduzido.</figcaption>
+        </figure>
+
+        <p>
+          Resultado:  
+          Um atacante poderia **enumerar milhões de pedidos**, com poucos recursos.
+        </p>
+
+        <h3>OSINT como vetor auxiliar</h3>
+
+        <pre><code>GET /app/api/v4/orders/?email=example@example.com&page=1&size=10&clientId=ID</code></pre>
+
+        <p>
+          Ao fornecer um e-mail válido, o atacante consegue verificar se a pessoa viajou, origem, destino, datas…  
+          **Privacidade zero.**
+        </p>
+
+        <h3>Autenticação não basta — autorização é essencial</h3>
+
+        <p>
+          Autenticar é trancar a porta.  
+          <strong>Autorizar é verificar quem pode entrar.</strong>
+        </p>
+
+        <p>Sem isso:</p>
+        <ul>
+          <li>Dados nas mãos erradas</li>
+          <li>Enumeração massiva</li>
+          <li>Riscos legais e financeiros</li>
+        </ul>
+
+        <h3>Boas práticas para APIs sensíveis</h3>
+
+        <ul>
+          <li>Autenticação obrigatória</li>
+          <li>Autorização contextual (O usuário é dono do dado?)</li>
+          <li>Rate limiting com bloqueio real</li>
+          <li>Logs + alertas de anomalias</li>
+        </ul>
+
+        <h3>Linha do Tempo do Report</h3>
+
+        <ul>
+          <li>02/04 — Report inicial enviado</li>
+          <li>07/04 — Contato com AppSec da empresa</li>
+          <li>09/04 — Nenhuma resposta…</li>
+          <li>11/04 — Empresa corrigiu e agradeceu</li>
+        </ul>
+
+        <p><strong>Keep Hacking!</strong> 🏴‍☠️</p>
+
+        <!-- Referências -->
+        <div class="post-footer-block">
+          <h2>References</h2>
+          <ul>
+            <li><a href="https://owasp.org/API-Security/editions/2023/en/0x11-t10/" target="_blank">OWASP API Top 10</a></li>
+            <li><a href="https://www.gov.br/anpd/pt-br/assuntos/lgpd-na-pratica" target="_blank">LGPD — ANPD Brasil</a></li>
+          </ul>
+
+          <p class="hack-the-planet">Hack The Planet!</p>
+        </div>
+
+      </article>
+    </main>
+
+    <footer>
+      <span>© n3k00n3 – happy hunting.</span>
+      <span><a
+          href="https://github.com/n3k00n3" target="_blank" rel="noopener">github</a></span>
+    </footer>
+
+  </div>
+</body>
+
+</html>

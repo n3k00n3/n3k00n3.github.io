@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Hackeando empresas via TINDER – n3k00n3 // labs</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="../../files/style.css" rel="stylesheet">
+</head>
+
+<body>
+  <div class="wrapper">
+
+    <header>
+      <div class="site-title">
+        <a href="/">n3k00n3 // labs</a>
+        <span>blog post</span>
+      </div>
+      <nav>
+        <a href="../../index.html">Home</a>
+        <a href="../../blog.html">Blog</a>
+        <a href="../../about.html">About</a>
+      </nav>
+    </header>
+
+    <main class="post-page">
+
+      <!-- Cabeçalho do post -->
+      <section class="post-header-single">
+        <h1 class="post-title-main">
+          Hackeando empresas via TINDER
+        </h1>
+        <p class="post-subtitle">
+          Obtendo o primeiro acesso à empresa via TINDER.
+        </p>
+        <div class="post-meta">
+          <span>Red Team</span>
+          <span>Physical Pentest</span>
+          <span>Social Engineering</span>
+        </div>
+      </section>
+
+      <!-- Corpo do post -->
+      <article class="post-body">
+
+        <h3>Contexto do ataque</h3>
+
+        <p>
+          Este texto tem como objetivo explorar uma maneira interessante e diferente de se obter o primeiro acesso
+          em uma empresa, utilizando um tipo peculiar de <em>spear phishing</em> — se é que podemos usar esse termo
+          nesse contexto de ataque.
+        </p>
+
+        <p>
+          Todo mundo já assistiu e se inspira em ataques desse tipo em filmes nada reais como <strong>WHOAMI</strong>
+          ou em episódios mais realistas de <strong>Mr. Robot</strong>.
+        </p>
+
+        <p>
+          Vale lembrar que esse modelo de exploração está mais para <strong>hacking</strong> do que para um
+          <strong>Black Teaming</strong>, uma vez que vamos explorar pessoas e não a empresa em si nesse ponto do projeto.
+          Por isso, é necessário analisar bastante e verificar até que ponto da campanha ainda está na legalidade
+          para ser efetuada e se realmente deve ser executada.
+        </p>
+
+        <p>
+          O primeiro acesso a uma empresa é um passo bastante importante, dado que a maioria das empresas tem
+          suas defesas físicas, como:
+        </p>
+
+        <ul>
+          <li>Vigilantes;</li>
+          <li>Catracas;</li>
+          <li>Cartões de acesso RFID;</li>
+        </ul>
+
+        <p>
+          Conseguir esse acesso de forma evasiva se torna bastante necessário para um bom andamento do projeto.
+        </p>
+
+        <h3>Tinder: seu like é meu acesso!</h3>
+
+        <p>
+          Desenhando um ataque que permitisse <em>bypassar</em> essas três camadas de segurança e ainda manter tudo
+          em modo silencioso, surgiu um pensamento interessante:
+        </p>
+
+        <blockquote>
+          <em>“Considerando que empresas grandes têm bastante funcionários, e nesse contexto uma parcela dos funcionários
+          pode utilizar o Tinder, por que não utilizar o Tinder como meio de acesso?”</em>
+        </blockquote>
+
+        <p>
+          A estratégia é relativamente simples: criar uma conta no Tinder e montar um perfil parecido com o dos
+          funcionários da empresa alvo. Para isso, é necessário já ter feito pelo menos os seguintes passos:
+        </p>
+
+        <ul>
+          <li>Observar e traçar o perfil dos funcionários da empresa;</li>
+          <li>Analisar a média de idade e o tipo de vestimenta dos colaboradores;</li>
+          <li>Verificar se eles saem para almoçar ou se preferem almoçar no local de trabalho.</li>
+        </ul>
+
+        <p>
+          Para esses passos iniciais, é importante que o projeto tenha uma janela de tempo suficiente para que
+          esse tipo de pesquisa não impacte o tempo dos testes.
+        </p>
+
+        <p>
+          Com a conta do Tinder atendendo a esses requisitos, é necessário ativar o interesse em todos os gêneros
+          e orientações sexuais, para aumentar as chances de <em>match</em> e, consequentemente, de um encontro com
+          “nosso acesso na bandeja”.
+        </p>
+
+        <h3>Hora do match!</h3>
+
+        <p>
+          Uma vez conseguido o <em>match</em>, a recomendação é buscar um encontro no horário de almoço, pois assim
+          as chances desses funcionários irem com o crachá da empresa são significativas e, durante a conversa,
+          esse cartão de acesso pode ser clonado via <strong>Proxmark</strong> ou <strong>Flipper Zero</strong>.
+          O tempo para clonagem é de aproximadamente 2–3 segundos.
+        </p>
+
+        <p>
+          Assim que conseguir clonar o cartão de acesso, é altamente recomendável continuar com o almoço normalmente,
+          para não levantar nenhum tipo de suspeita.
+        </p>
+
+        <p>
+          Obtendo esse primeiro acesso com sucesso, podem ser efetuados todos os passos seguintes do objetivo da campanha,
+          que variam de projeto para projeto. No geral, a ideia é obter um acesso ao domínio da empresa para que
+          o time de Red Team possa continuar os testes.
+        </p>
+
+        <h3>Medidas de proteção e conscientização</h3>
+
+        <p>
+          É determinante que treinamentos de segurança sejam realizados com frequência para que os colaboradores
+          entendam a importância de seguir boas práticas de segurança.
+        </p>
+
+        <p>
+          Cartões de acesso devem ficar sempre no pescoço, de forma visível, e é crucial que esses colaboradores
+          saibam o valor desse dado (o próprio cartão) para agentes maliciosos. Assim, o cuidado se torna maior,
+          bem como a responsabilidade de carregar uma chave de acesso que pode comprometer a organização.
+        </p>
+
+        <p>
+          Uma vez que todos na empresa entendem a importância dessa chave, é bem menos provável que deixem o cartão
+          em qualquer lugar ou permitam que pessoas sem crachá acessem partes restritas da empresa.
+        </p>
+
+        <p><strong>Happy Hacking!</strong> 🏴‍☠️</p>
+
+        <!-- bloco final -->
+        <div class="post-footer-block">
+          <h2>References</h2>
+          <ul>
+            <li>Hacking / Red Team / Physical Pentest</li>
+          </ul>
+
+          <p class="hack-the-planet">Hack The Planet!</p>
+        </div>
+
+      </article>
+    </main>
+
+    <footer>
+      <span>© n3k00n3 – happy hunting.</span>
+      <span>
+        <a href="https://github.com/n3k00n3" target="_blank" rel="noopener">github</a>
+      </span>
+    </footer>
+
+  </div>
+</body>
+
+</html>

@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>[Writeup] TenableCTF – Thumbnail – n3k00n3 // labs</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="../../files/style.css" rel="stylesheet">
+</head>
+
+<body>
+  <div class="wrapper">
+    <header>
+      <div class="site-title">
+        <a href="/">n3k00n3 // labs</a>
+        <span>blog post</span>
+      </div>
+      <nav>
+        <a href="../../index.html">Home</a>
+        <a href="../../blog.html">Blog</a>
+        <a href="../../about.html">About</a>
+      </nav>
+    </header>
+
+    <main class="post-page">
+
+      <!-- Cabeçalho do post -->
+      <section class="post-header-single">
+        <h1 class="post-title-main">
+          [Writeup] TenableCTF – Thumbnail
+        </h1>
+        <p class="post-subtitle">
+          Abusing video thumbnail generation to read local files via SSRF.
+        </p>
+        <div class="post-meta">
+          <span>CTF</span>
+          <span>TenableCTF</span>
+          <span>Web / SSRF</span>
+        </div>
+      </section>
+
+      <!-- Corpo do post -->
+      <article class="post-body">
+
+        <h3>About the challenge</h3>
+
+        <p>
+          Basically, the challenge was a file upload feature that generates and shows a thumbnail
+          when you upload an <code>mp4</code> file.
+        </p>
+
+        <figure>
+          <img src="../../files/images/1.png" alt="Index page of the TenableCTF Thumbnail challenge">
+          <figcaption>Fig.1 – Index page.</figcaption>
+        </figure>
+
+        <p>
+          Looking at the source code, we can see the <strong>/uploads/</strong> folder and a full path disclosure.
+          Inside the <strong>/uploads/</strong> folder there was a flag file, but it was not possible to access it
+          directly.
+        </p>
+
+        <figure>
+          <img src="../../files/images/source-code.png" alt="Source code showing upload path disclosure">
+          <figcaption>Fig.2 – Path disclosure.</figcaption>
+        </figure>
+
+        <figure>
+          <img src="../../files/images/flag-not-accessible.png" alt="Forbidden page when trying to access flag directly">
+          <figcaption>Fig.3 – Forbidden.</figcaption>
+        </figure>
+
+        <p>
+          At this point it was clear that this was going to be an SSRF-style issue, but it wasn’t obvious how to reach
+          the file.
+          I tried to modify the base64 file handled by the upload process, but it didn’t work.
+          After a while, a friend told me about SSRF using video files, so I started digging into that
+          and found a BlackHat paper and some HackerOne reports.
+        </p>
+
+        <h3>Challenge solution</h3>
+
+        <p>
+          The idea was to abuse how the backend generates thumbnails from the video.
+          Since we knew the full path to the flag file (from the path disclosure), we could craft a video that points to
+          that local file.
+        </p>
+
+        <p>
+          Using the tool below, we inject a reference to the flag file into the video:
+        </p>
+
+        <pre><code>./gen_xbin_avi.py file:///var/www/html/uploads/flag.txt ~/Downloads/bla.mp4</code></pre>
+
+        <p>
+          After uploading the new <code>mp4</code> file, the server processes it to generate a thumbnail
+          and ends up reading the local file we pointed to, leaking the flag.
+        </p>
+
+        <figure>
+          <img src="../../files/images/flag.png" alt="Flag revealed after processing crafted video file">
+          <figcaption>Fig.4 – Flag.</figcaption>
+        </figure>
+
+        <div class="post-footer-block">
+          <h2>References</h2>
+          <ul>
+            <li>
+              <a href="https://www.blackhat.com/docs/us-16/materials/us-16-Ermishkin-Viral-Video-Exploiting-Ssrf-In-Video-Converters.pdf"
+                 target="_blank" rel="noopener">
+                BlackHat paper – Viral Video: Exploiting SSRF in video converters
+              </a>
+            </li>
+            <li>
+              <a href="https://github.com/neex/ffmpeg-avi-m3u-xbin" target="_blank" rel="noopener">
+                ffmpeg-avi-m3u-xbin
+              </a>
+            </li>
+            <li>
+              <a href="https://hackerone.com/reports/487008" target="_blank" rel="noopener">
+                HackerOne report
+              </a>
+            </li>
+          </ul>
+
+          <p class="hack-the-planet">Hack The Planet!</p>
+        </div>
+
+      </article>
+    </main>
+
+    <footer>
+      <span>© n3k00n3 – happy hunting.</span>
+      <span>
+        <a href="https://github.com/n3k00n3" target="_blank" rel="noopener">github</a>
+      </span>
+    </footer>
+  </div>
+</body>
+
+</html>
