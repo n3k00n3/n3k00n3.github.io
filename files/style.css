@@ -220,6 +220,15 @@ main {
   color: #99c7ff;
 }
 
+.badge.reverse {
+  border-color: hsl(76, 100%, 49%);;
+  color: hsl(76, 100%, 49%);
+}
+
+.badge.redteam {
+  border-color: hsl(0, 100%, 50%);;
+  color: hsl(9, 99%, 46%);
+}
 /* About */
 
 .about {

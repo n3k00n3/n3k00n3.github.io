@@ -35,8 +35,8 @@
         </p>
 
         <div class="post-meta">
-          <span>[TAG 1]</span>
-          <span>[TAG 2]</span>
+          <span>Reverse</span>
+          <span>iOS</span>
           <!-- coloca data se quiser -->
           <!-- <span>YYYY-MM-DD</span> -->
         </div>
@@ -48,17 +48,17 @@
 
         <h3>Introdução</h3>
         <p>
-          Esse post faz parte dos meus novos estudos sobre pentest e engenharia reversa em aplicativos para iOS.
-          Acredito que alguns dos assuntos não são novos pra maioria, mas como é algo novo para mim e tenho o costume de
+          Este post faz parte dos meus novos estudos sobre pentest e engenharia reversa em aplicativos para iOS.
+          Acredito que alguns dos assuntos não são novos para algumas pessoas, mas como é algo novo para mim e tenho o hábito de
           fazer anotações durante meus estudos e/ou aplicar o que foi aprendido de uma forma diferente, para assim
           conseguir fixar o tópico, esses posts serão a maneira de brincar e fixar o conhecimento. No primeiro momento
-          veremos um aplicativo feito apenas para testes chamado <a href=""><strong>DVIA-v2</strong></a>, entretanto
-          logo adiante vamos também ver a mesma técnica sendo aplicada em um outro app que está na App Store e pertence
-          a um banco. Assim é possível entender que apesar de simples a técnica é útil também no mundo real.
+          veremos um aplicativo feito apenas para testes chamado <a href=""><strong>DVIA-v2</strong></a>. entretanto,
+          logo adiante veremos também a mesma técnica sendo aplicada em um outro app que está na <i>App Store</i> e pertence
+          a um determinado banco. Assim é possível entender que apesar de simples a técnica é útil também no mundo real.
         </p>
 
         <p>
-          Para esse teste estou utilizando um Iphone X com iOS 16.7.11. O Jailbreak que estou utilizando é o Paler1n.
+          Para esse teste estou utilizando um Iphone X com iOS 16.7.11. O Jailbreak que estou utilizando é o Palera1n.
         </p>
 
         <h3>O que é patching?</h3>
@@ -68,11 +68,11 @@
 
         <h3>Instalando o App. </h3>
         <p>
-          Depois de baixar o aplicativo, fiz a instalação do mesmo de modo simples e rápido com o uso do airdrop, enviei
-          o .iPA para o iphone de teste e instalei utilizando o Tweak TrollStore lite.
+          Depois de baixar o aplicativo, fiz a instalação do mesmo de modo rápido, com o uso do airdrop. Enviei
+          o .IPA para o iphone de teste e instalei utilizando o Tweak <b>TrollStore lite</b>.
         </p>
 
-        O desafio é simples, como podemos ver na imagem a seguir. Precisamos mudar a frase "I love Google" para "I love
+        O desafio é de level básico, como podemos ver na imagem a seguir. Precisamos mudar a frase "I love Google" para "I love
         Apple".
 
         <!-- Exemplo de figura -->
@@ -83,9 +83,9 @@
 
         <h3>Decompilando o App</h3>
         <p>
-          Agora que sabemos o que precisamos fazer, vamos decompilar o IPA e brincar com o binário dele. o arquivo IPA é
+          Agora que sabemos o que precisamos fazer, vamos decompilar o IPA e brincar com o binário dele. O arquivo IPA é
           um arquivo zipado que pode ser descompactado e compactado novamente, como veremos a seguir durante o patching
-          do binário. Durante esse processo vamos precisar do radare2 instalado, caso não tenha ainda, você pode utilizar o
+          do binário. Durante esse processo vamos precisar do radare2 instalado. Caso não tenha ainda, você pode utilizar o
           gerenciador de pacotes do seu SO. No ambiente macOS a instalação pode ser feita via brew.
         </p>
 
@@ -100,7 +100,7 @@
         <pre><code><span class="keyword">r2 -w</span> DVIA-v2</code></pre>
 
         <p>Agora que estamos no radare2 com o binário aberto, vamos precisar fazer a análise do binário. o comando 'aaa'
-          faz a análise do binário, o comando 'izz' faz a pesquisa por strings no app e o '~' faz o filtro pela string
+          faz a análise do binário. O comando 'izz' faz a pesquisa por strings no app e o '~' faz o filtro pela string
           que queremos.</p>
 
         <pre><code><span class="number">[0x1001a9790]></span> aaa</code></pre>
@@ -119,9 +119,8 @@
         <pre><code><span class="number">[0x10035eeb6]></span> psz
  I love Google</code></pre>
 
-        <p>Agora que confirmamos a string, podemos fazer a troca, primeiro utilizando um comando do bash
-          dentro do próprio r2, para passsar um comando bash, podemos utilizar '!', depois o comando 'wx' para fazer escrita
-          em hexadecimal. e podemos utilizar o 'psz' mais uma vez para confirmar que a troca foi feita e sair com 'q'
+        <p>Agora que confirmamos a string, podemos fazer a troca dela. Primeiro utilizaremos um comando do bash
+          dentro do próprio r2. Para passar esse comando bash podemos utilizar o simbolo '!' com o comando que desejamos, como por exemplo '!ls', '!whoami' e etc. Depois o comando 'wx' para fazer a escrita em hexadecimal. Podemos utilizar o 'psz' mais uma vez para confirmar que a troca foi realizada e logo em seguida sair do radare2 com 'q'.
         </p>
 
         <pre><code><span class="number">[0x10035eeb6]></span>!echo -n "I Love Apple " | xxd -p
@@ -158,9 +157,8 @@
           <figcaption>Fig.3 – Tela de Bloqueio de detecção Jailbreak.</figcaption>
         </figure>
 
-        <p>Primeira coisa que precisamos fazer é fazer o download do ipa que está no dispositivo e foi baixado da loja.
-          Existem diferentes formas de fazer o donwload do ipa e umas das mais comuns é o uso da ferramenta <a
-            herf="https://github.com/AloneMonkey/frida-ios-dump"><strong>frida-ios-dump</strong></a></p>
+        <p>A primeira coisa que precisamos fazer é fazer o download do ipa que está no dispositivo e foi baixado da loja.
+          Existem diferentes formas de fazer o download do ipa e umas das mais comuns é o uso da ferramenta <a href="https://github.com/AloneMonkey/frida-ios-dump"><strong>frida-ios-dump</strong></a></p>
 
         <p>Eu vou utilizar uma tool que fiz(ainda precisa de ajustes), mas me ajuda a automatizar a tarefa de baixar com scp.</p>
 
@@ -280,8 +278,8 @@ echo "    IPA salvo em: ${OUTPUT_DIR}/${IPA_BASENAME}.ipa"</code></pre>
 </code></pre>
 
         <p>
-          Agora podemos pesquisar um pouco sobre jailbreak dentro da aplicação, vamos utilizar a ferramenta ipsw para
-          extrair as classes e métodos da aplicação. Também vamos utilizar a ferramenta ag que é um grep com esteroids.
+          Agora podemos pesquisar um pouco sobre jailbreak dentro da aplicação. Vamos utilizar a ferramenta <strong>ipsw</strong> para
+          extrair as classes e métodos da aplicação. Também vamos utilizar a ferramenta ag que é um grep com esteróides.
           :D
         </p>
 
@@ -296,7 +294,7 @@ echo "    IPA salvo em: ${OUTPUT_DIR}/${IPA_BASENAME}.ipa"</code></pre>
 
         <figure>
           <img src="../../files/images/patching-ios-app/vim.png" alt="Patch Realizado">
-          <figcaption>Fig.4 – verificando arquivo.</figcaption>
+          <figcaption>Fig.4 – Verificando arquivo.</figcaption>
         </figure>
 
         <p>Aqui podemos ter uma noção melhor da classe e seus métodos, assim podemos pesquisar melhor dentro do radare2
@@ -305,7 +303,7 @@ echo "    IPA salvo em: ${OUTPUT_DIR}/${IPA_BASENAME}.ipa"</code></pre>
         <pre><code><span class="keyword">cd</span> Payload/redacted.app
 <span class="keyword">r2 -w</span> redacted</code></pre>
 
-          <p>Podemos perceber que existe uma verificação de frida, então vamos pesquisar por frida-server ou frida para vermos a função que faz isso.</p>
+          <p>Podemos perceber que existe uma verificação de frida. Então, vamos pesquisar por frida-server ou frida para vermos a função que faz isso.</p>
 
 <pre><code><span class="number">[0x10002730c]></span> izz ~frida
 4998 0x000d51da 0x1000d51da 12  13   9.__TEXT.__cstring         ascii   frida-server
@@ -315,7 +313,7 @@ echo "    IPA salvo em: ${OUTPUT_DIR}/${IPA_BASENAME}.ipa"</code></pre>
 
         <figure>
           <img src="../../files/images/patching-ios-app/disas-function2.png" alt="Patch Realizado">
-          <figcaption>Fig.5 – disassemble.</figcaption>
+          <figcaption>Fig.5 – Disassemble.</figcaption>
         </figure>
 
         <p>Aqui podemos perceber que muita checagem está sendo feita. Não vou entrar nos detalhes de cada uma, mas se tiver dificuldade com o disassemble de Arm64, recomendo utilizar o comando 'pdc' ao invés do comando 'pdf', assim terá um visão do código em C e vai conseguir revisar melhor. Invista um tempo entendendo a função...</p>
@@ -347,7 +345,7 @@ INFO: Written 4 byte(s) (ret) = wx c0035fd6 @ 0x1000201f8
 
                 <figure>
           <img src="../../files/images/patching-ios-app/bypass-pronto2.png" class="img-small" alt="Patch Realizado">
-          <figcaption>Fig.8 – bypass pronto.</figcaption>
+          <figcaption>Fig.8 – Bypass pronto.</figcaption>
         </figure>
 
         <!-- Bloco de referências -->
