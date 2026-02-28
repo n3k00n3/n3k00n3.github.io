@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Bypass Root em App Flutter – n3k00n3 // labs</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="../../files/style.css" rel="stylesheet">
+
+  <!-- Prism highlight -->
+  <link rel="stylesheet"
+        href="https://unpkg.com/prismjs@1.29.0/themes/prism-tomorrow.min.css">
+</head>
+
+<body>
+  <div class="wrapper">
+
+    <header>
+      <div class="site-title">
+        <a href="/">n3k00n3 // labs</a>
+        <span>blog post</span>
+      </div>
+      <nav>
+        <a href="../../index.html">Home</a>
+        <a href="../../blog.html">Blog</a>
+        <a href="../../about.html">About</a>
+      </nav>
+    </header>
+
+    <main class="post-page">
+
+      <!-- HEADER -->
+      <section class="post-header-single">
+        <h1 class="post-title-main">
+          Bypass Root em App Flutter
+        </h1>
+        <p class="post-subtitle">
+          Contornando proteções RootBeer + MethodChannel para iniciar o pentest de API.
+        </p>
+        <div class="post-meta">
+          <span>Mobile</span>
+          <span>Flutter</span>
+          <span>Frida</span>
+        </div>
+      </section>
+
+      <article class="post-body">
+
+        <h3>Contexto</h3>
+
+        <p>
+          Durante uma análise de API, eu não possuía acesso completo à collection —
+          apenas um Swagger incompleto e com diversos endpoints ausentes.
+        </p>
+
+        <p>
+          A alternativa natural foi utilizar o aplicativo mobile que consumia essa API.
+          Porém, logo no início surgiu o primeiro obstáculo:
+        </p>
+
+        <blockquote>
+          O aplicativo possuía proteções anti-root.
+        </blockquote>
+
+        <p>
+          Inicialmente utilizei scripts clássicos de Frida, mas sem sucesso.
+          Como precisava avançar para iniciar o pentest da API, parti para a engenharia
+          reversa do APK, que estava ofuscado via Proguard/R8.
+        </p>
+
+        <h3>Recon inicial</h3>
+
+        <p>
+          Seguindo o fluxo normal, a análise começou pelo
+          <code>AndroidManifest.xml</code>, identificando a <b>MainActivity</b>.
+        </p>
+
+         <figure>
+          <img src="../../files/images/root-bypass/AndroidManifest.png"
+               class="img-large"
+               alt="MainActivity e MethodChannel">
+          <figcaption>Fig.1 – AndroidManifest.xml</figcaption>
+        </figure>
+    
+
+        <figure>
+          <img src="../../files/images/root-bypass/MainActivity.png"
+               class="img-large"
+               alt="MainActivity e MethodChannel">
+          <figcaption>Fig.2 – MethodChannel indicando root_detection.</figcaption>
+        </figure>
+
+        <p>
+          Um ponto importante foi a identificação do canal Flutter:
+        </p>
+
+        <pre><code class="language-java">
+public final String f9401Q = 
+  "REDACTED/root_detection";
+        </code></pre>
+        
+        <p>
+          Isso já indicava claramente um mecanismo de detecção de root via bridge
+          Flutter ↔ código nativo.
+        </p>
+          
+        <p>
+            Também é possível verificar que a váriavel F9401Q está sendo utilizada no import B1.k. 
+        </p>
+
+        <h3>Análise da detecção de root</h3>
+
+        <p>Ao verificar o import <code>B1.k</code>, podemos verificar o método <code>onMethodCall</code> e também é possível ver a string "isDeviceRoot". </p>
+        <figure>
+          <img src="../../files/images/root-bypass/onMethodCall.png"
+               class="img-large"
+               alt="MainActivity e MethodChannel">
+          <figcaption>Fig.3 – Método onMethodCall.</figcaption>
+        </figure>
+
+       <figure>
+          <img src="../../files/images/root-bypass/detection.png"
+               class="img-large"
+               alt="MainActivity e MethodChannel">
+          <figcaption>Fig.4 – Executa a detecção Root.</figcaption>
+        </figure>
+
+        <p>
+            Agora vamos verificar o que é feito em <code>C1069k</code> e  assim entender melhor os testes executados. Foi importante marcar no jadx-gui para mostrar código inconsistente, caso contrário ele collapsa e não mostra o código totalmente.
+        </p>
+
+        <p>
+          O método <code>c()</code> retorna:
+        </p>
+
+        <ul>
+          <li><b>true</b> → dispositivo rootado</li>
+          <li><b>false</b> → dispositivo limpo</li>
+        </ul>
+
+        <p>
+          Ela possui 7 verificações e utiliza a biblioteca <b>RootBeer</b> (<code>com.scottyab.rootbeer</code>).
+        </p>
+
+        <figure>
+          <img src="../../files/images/root-bypass/importRootBeer.png"
+               class="img-medium"
+               alt="Import RootBeer">
+          <figcaption>Fig.5 – Uso da biblioteca RootBeer.</figcaption>
+        </figure>
+
+        <h3>Checks identificados</h3>
+
+        <figure>
+          <img src="../../files/images/root-bypass/inicioCmethod.png"
+               class="img-medium"
+               alt="Import RootBeer">
+          <figcaption>Fig.6 – Primeiras Checagens.</figcaption>
+        </figure>
+        <p>
+            Analisando o método c(), percebemos que ele opera em camadas progressivas de desconfiança. A primeira linha de investigação consiste em varrer o sistema em busca de pacotes suspeitos usando duas listas distintas de aplicativos conhecidos de gerenciamento de root, tudo isso devidamente logado, o que significa que cada detecção pode ser observada em tempo real via logcat. (Não entendi o motivo dos desenvolvedores logarem isso).
+        </p>
+
+        <figure>
+          <img src="../../files/images/root-bypass/logcat.png"
+               class="img-medium"
+               alt="Import RootBeer">
+          <figcaption>Fig.7 – logcat.</figcaption>
+        </figure>
+        <p>
+            Na sequência, delega ao método a() a tarefa de farejar o binário su pelo filesystem, percorrendo os paths mais comuns onde ele costuma se esconder em dispositivos comprometidos. Não satisfeito com isso, o método vai além e executa diretamente o comando getprop para interrogar as entranhas do sistema operacional, vasculhando as propriedades ro.debuggable e ro.secure — dois sinalizadores que, quando adulterados, denunciam tanto a presença de um build de desenvolvimento quanto a existência de um shell com privilégios de root liberados.
+        </p>
+        
+        <figure>
+          <img src="../../files/images/root-bypass/mount.png"
+               class="img-medium"
+               alt="Import RootBeer">
+          <figcaption>Fig.8 – Mount.</figcaption>
+        </figure>
+
+        <p>
+            Também podemos observar que a verificação utiliza <b">mount</b> para parsear particões e se assim observar se está como rw (escrita).
+        </p>
+      
+        <figure>
+          <img src="../../files/images/root-bypass/teste-keys.png"
+               class="img-medium"
+               alt="Import RootBeer">
+          <figcaption>Fig.8 – test-keys.</figcaption>
+        </figure>
+
+        <p>
+            Aqui ele checa como o dispositivo foi compilado, em casos como <code>test-keys</code> indica ROM não oficial. Logo em seguida podemos notar mais uma verificação por “su” direto no shell, caso tenha algum retorno o binário está no PATH do sistema.
+        </p>
+
+        <p>
+            O app também possui verificação nativa com RootBeer que é mais complexo de interceptar, além da verificação por magisk 
+        </p>
+
+        <p>
+          Após a engenharia reversa, o fluxo de detecção pode ser resumido como:
+        </p>
+
+        <pre><code class="language-java">
+public boolean isDeviceRooted() {
+
+  // 1. Apps de root (lista primária)
+  if (hasRootApps(PRIMARY_ROOT_APPS)) return true;
+
+  // 2. Apps de root (lista secundária)
+  if (hasRootApps(SECONDARY_ROOT_APPS)) return true;
+
+  // 3. Binário su
+  if (binaryExists("su")) return true;
+
+  // 4. Props suspeitas
+  if (hasDebugSystemProps()) return true;
+
+  // 5. Partições RW
+  if (hasRwMountedPartitions()) return true;
+
+  // 6. test-keys
+  if (Build.TAGS.contains("test-keys")) return true;
+
+  // 7. which su
+  if (whichSuExists()) return true;
+
+  // 7b. RootBeer + Magisk
+  if (nativeCheckForRoot() && binaryExists("magisk")) return true;
+
+  return false;
+}
+        </code></pre>
+
+        <p>
+          Ou seja: uma cadeia relativamente robusta de verificações.
+        </p>
+
+        <h3>Tentativas iniciais</h3>
+
+        <p>
+          A abordagem inicial foi tentar bypass individual de cada verificação,
+          porém sem sucesso consistente.
+        </p>
+
+        <p>
+          Foi então que a estratégia mudou para um ponto mais alto da stack:
+        </p>
+
+        <blockquote>
+          Interceptar o retorno direto no MethodChannel.
+        </blockquote>
+
+        <h3>Bypass com Frida</h3>
+
+        <p>
+          A ideia foi simples e eficiente:
+          interceptar <code>onMethodCall</code> e forçar os retornos esperados pelo app.
+        </p>
+
+        <pre><code class="language-javascript">
+Java.perform(function() {
+
+  const Boolean = Java.use('java.lang.Boolean');
+
+  const spoofFalse = [
+    'isDeviceRooted', 'isRooted', 'isRootAvailable',
+    'isJailBroken', 'isMockLocation',
+    'isDevelopmentModeEnable', 'usbDebuggingCheck',
+    'isTampered'
+  ];
+
+  const spoofTrue = [
+    'isRealDevice'
+  ];
+
+  function hookClass(className) {
+    const Clazz = Java.use(className);
+
+    Clazz.onMethodCall.implementation = function(call, result) {
+
+      const name = call.getClass()
+                       .getDeclaredField('a')
+                       .get(call);
+
+      if (spoofFalse.indexOf(String(name)) !== -1) {
+        Java.cast(result, Java.use('Z5.i'))
+            .a(Boolean.FALSE.value);
+        return;
+      }
+
+      if (spoofTrue.indexOf(String(name)) !== -1) {
+        Java.cast(result, Java.use('Z5.i'))
+            .a(Boolean.TRUE.value);
+        return;
+      }
+
+      return this.onMethodCall(call, result);
+    };
+  }
+
+  hookClass('B1.k');
+  hookClass('Z0.a');
+  hookClass('z5.a');
+
+});
+        </code></pre>
+
+        <h3>Resultado</h3>
+
+        <p>
+          Após o hook, o aplicativo passou a funcionar normalmente,
+          permitindo finalmente iniciar a interceptação das chamadas da API.
+        </p>
+
+        <figure>
+          <img src="../../files/images/root-bypass/bypass.png"
+               class="img-medium"
+               alt="App funcionando após bypass">
+          <figcaption>Fig.9 – App operacional após bypass.</figcaption>
+        </figure>
+
+        <h3>Conclusão</h3>
+
+        <p>
+          Mesmo aplicações que utilizam RootBeer + checks adicionais podem ser
+          contornadas quando:
+        </p>
+
+        <ul>
+          <li>Existe bridge Flutter exposta</li>
+          <li>As validações dependem do MethodChannel</li>
+          <li>Não há hardening adequado no lado nativo</li>
+        </ul>
+
+        <p>
+          O ponto chave aqui não foi lutar contra cada verificação,
+          mas sim atacar o ponto de decisão.
+        </p>
+
+        <blockquote>
+          Às vezes o bypass mais eficiente não está na verificação —
+          está no retorno.
+        </blockquote>
+
+        <p><b>Happy Hacking.</b> 🏴‍☠️</p>
+
+        <div class="post-footer-block">
+          <h2>References</h2>
+          <ul>
+            <li><a href="https://github.com/scottyab/rootbeer" target="_blank">com.scottyab.rootbeer</a></li>
+            <li><a href="https://api.flutter.dev/flutter/services/MethodChannel-class.html" target="_blank">MethodChannel</a></li>
+            <li><a href="https://github.com/n3k00n3/Frida-Labs-PT" target="_blank"> instrumentation</a></li>
+          </ul>
+          <p class="hack-the-planet">Hack The Planet!</p>
+        </div>
+
+      </article>
+    </main>
+
+    <footer>
+      <span>© n3k00n3 – happy hunting.</span>
+      <span>
+        <a href="https://github.com/n3k00n3" target="_blank">github</a>
+      </span>
+    </footer>
+
+  </div>
+
+  <!-- Prism -->
+  <script src="https://unpkg.com/prismjs@1.29.0/prism.min.js"></script>
+  <script src="https://unpkg.com/prismjs@1.29.0/components/prism-java.min.js"></script>
+  <script src="https://unpkg.com/prismjs@1.29.0/components/prism-javascript.min.js"></script>
+</body>
+</html>
