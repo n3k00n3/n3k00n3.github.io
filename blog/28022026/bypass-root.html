@@ -149,13 +149,27 @@ public final String f9401Q =
           <figcaption>Fig.5 – Uso da biblioteca RootBeer.</figcaption>
         </figure>
 
+        <figure>
+          <img src="../../files/images/root-bypass/libtoolcheckerLoad.png"
+               class="img-medium"
+               alt="Import RootBeer">
+          <figcaption>Fig.6 – biblioteca RootBeer.</figcaption>
+        </figure>
+
+        <figure>
+          <img src="../../files/images/root-bypass/libtooCheckerso.png"
+               class="img-medium"
+               alt="Import RootBeer">
+          <figcaption>Fig.7 – libtoolChecker.so.</figcaption>
+        </figure>        
+
         <h3>Checks identificados</h3>
 
         <figure>
           <img src="../../files/images/root-bypass/inicioCmethod.png"
                class="img-medium"
                alt="Import RootBeer">
-          <figcaption>Fig.6 – Primeiras Checagens.</figcaption>
+          <figcaption>Fig.8 – Primeiras Checagens.</figcaption>
         </figure>
         <p>
             Analisando o método c(), percebemos que ele opera em camadas progressivas de desconfiança. A primeira linha de investigação consiste em varrer o sistema em busca de pacotes suspeitos usando duas listas distintas de aplicativos conhecidos de gerenciamento de root, tudo isso devidamente logado, o que significa que cada detecção pode ser observada em tempo real via logcat. (Não entendi o motivo dos desenvolvedores logarem isso).
@@ -165,7 +179,7 @@ public final String f9401Q =
           <img src="../../files/images/root-bypass/logcat.png"
                class="img-medium"
                alt="Import RootBeer">
-          <figcaption>Fig.7 – logcat.</figcaption>
+          <figcaption>Fig.9 – logcat.</figcaption>
         </figure>
         <p>
             Na sequência, delega ao método a() a tarefa de farejar o binário su pelo filesystem, percorrendo os paths mais comuns onde ele costuma se esconder em dispositivos comprometidos. Não satisfeito com isso, o método vai além e executa diretamente o comando getprop para interrogar as entranhas do sistema operacional, vasculhando as propriedades ro.debuggable e ro.secure — dois sinalizadores que, quando adulterados, denunciam tanto a presença de um build de desenvolvimento quanto a existência de um shell com privilégios de root liberados.
@@ -175,7 +189,7 @@ public final String f9401Q =
           <img src="../../files/images/root-bypass/mount.png"
                class="img-medium"
                alt="Import RootBeer">
-          <figcaption>Fig.8 – Mount.</figcaption>
+          <figcaption>Fig.10 – Mount.</figcaption>
         </figure>
 
         <p>
@@ -186,7 +200,7 @@ public final String f9401Q =
           <img src="../../files/images/root-bypass/teste-keys.png"
                class="img-medium"
                alt="Import RootBeer">
-          <figcaption>Fig.8 – test-keys.</figcaption>
+          <figcaption>Fig.11 – test-keys.</figcaption>
         </figure>
 
         <p>
@@ -317,7 +331,7 @@ Java.perform(function() {
           <img src="../../files/images/root-bypass/bypass.png"
                class="img-medium"
                alt="App funcionando após bypass">
-          <figcaption>Fig.9 – App operacional após bypass.</figcaption>
+          <figcaption>Fig.12 – App operacional após bypass.</figcaption>
         </figure>
 
         <h3>Conclusão</h3>
