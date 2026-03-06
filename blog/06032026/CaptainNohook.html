@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>[Writeup] Captain Nohook – n3k00n3 // labs</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="../../files/style.css" rel="stylesheet">
+
+    <!-- Prism highlight -->
+    <link rel="stylesheet" href="https://unpkg.com/prismjs@1.29.0/themes/prism-tomorrow.min.css">
+</head>
+
+<body>
+
+    <div class="wrapper">
+
+        <header>
+            <div class="site-title">
+                <a href="/">n3k00n3 // labs</a>
+                <span>blog post</span>
+            </div>
+            <nav>
+                <a href="../../index.html">Home</a>
+                <a href="../../blog.html">Blog</a>
+                <a href="../../about.html">About</a>
+            </nav>
+        </header>
+
+        <main class="post-page">
+
+            <section class="post-header-single">
+                <h1 class="post-title-main">
+                    [Writeup] Captain Nohook
+                </h1>
+
+                <p class="post-subtitle">
+                    Bypassing anti-reverse-Debugging protections in an iOS application.
+                </p>
+
+                <div class="post-meta">
+                    <span>iOS</span>
+                    <span>Frida</span>
+                    <span>Reverse Engineering</span>
+                </div>
+            </section>
+
+            <article class="post-body">
+
+                <h3>Initial Observation</h3>
+
+                <p>
+                    When opening the <strong>Captain Nohook</strong> application, the first screen
+                    appears normally. However, after clicking the button <strong>"Flag 'ere!"</strong>,
+                    the application displays a warning message indicating that the device is
+                    <strong>non-compliant</strong>.
+                </p>
+
+                <p>
+                    This behavior strongly suggests that the application performs
+                    <strong>anti-reverse-engineering checks</strong> before allowing access to the
+                    flag.
+                </p>
+
+                <p>
+                    Because of that, the next step was to analyze the application's internal
+                    structure.
+                </p>
+
+                <figure>
+                    <img src="../../files/images/CaptainNohook/figure1.png" class="img-medium"
+                        alt="App funcionando após bypass">
+                    <figcaption>Fig.1 – Application Message.</figcaption>
+                </figure>
+
+                <h3>Inspecting the Application Classes</h3>
+
+                <p>
+                    By inspecting the application's classes it was possible to identify a
+                    structure related to <code>FailedChecks</code>.
+                </p>
+                <figure>
+                    <img src="../../files/images/CaptainNohook/classe.png" class="img-medium"
+                        alt="App funcionando após bypass">
+                    <figcaption>Fig.2 – Classe.</figcaption>
+                </figure>
+
+                <figure>
+                    <img src="../../files/images/CaptainNohook/metodos.png" class="img-medium"
+                        alt="App funcionando após bypass">
+                    <figcaption>Fig.3 – Class Methods.</figcaption>
+                </figure>
+                <p>
+                    This indicates that the application performs several runtime security
+                    validations, such as:
+                </p>
+
+                <ul>
+                    <li>checking suspicious files</li>
+                    <li>checking suspicious Objective-C classes</li>
+                    <li>detecting reverse engineering tools</li>
+                    <li>checking writable restricted directories</li>
+                    <li>checking open ports</li>
+                    <li>verifying symbolic links</li>
+                    <li>detecting dynamic loader anomalies</li>
+                </ul>
+
+                <p>
+                    These checks are commonly used in hardened iOS applications to prevent
+                    runtime instrumentation using tools like:
+                </p>
+
+                <ul>
+                    <li>Frida</li>
+                    <li>debuggers</li>
+                    <li>dynamic patching frameworks</li>
+                </ul>
+
+            
+
+                <h3>Observing Runtime Behavior with Frida-Tracee</h3>
+
+                <p>
+                    Once interesting components were identified, the next step was to observe
+                    the application's runtime behavior using <strong>Frida-Trace</strong>.
+                </p>
+
+                <p>
+                    The following command was used:
+                </p>
+
+                <pre><code class="language-bash">
+frida-trace -U -f "com.mobilehackinglab.Captain-Nohook" -i "*failedChecks*"
+</code></pre>
+
+                <p>
+                    This attaches Frida to the application and automatically generates
+                    handlers for any functions containing the string <code>failedChecks</code>.
+                </p>
+
+                <p>
+                    Frida then creates handler scripts that allow us to intercept and modify
+                    function behavior at runtime.
+                </p>
+
+   
+
+                <h3>Intercepting the Security Check</h3>
+
+                <p>
+                    The generated handler was modified to manipulate the return value of the
+                    reverse engineering check.
+                </p>
+
+                <pre><code class="language-javascript">
+defineHandler({
+  onEnter(log, args, state) {
+    log('ReverseEngineeringToolsStatus being created...');
+    state.passed = args[0].toInt32();
+    log('passed: ' + (state.passed ? 'TRUE' : 'FALSE'));
+  },
+
+  onLeave(log, retval, state) {
+    log('Original value: ' + (state.passed ? 'TRUE' : 'FALSE'));
+    retval.replace(ptr("1"));
+    log('New forced value: TRUE');
+  }
+});
+</code></pre>
+
+                <p>
+                    This script forces the function to always return <code>true</code>,
+                    making the application believe that all security checks passed.
+                </p>
+
+                <p>
+                    As a result:
+                </p>
+
+                <ul>
+                    <li>the anti-debug protection is bypassed</li>
+                    <li>the application no longer terminates</li>
+                </ul>
+
+                <p>
+                    However, even after bypassing the protection, the flag was still not
+                    displayed.
+                </p>
+
+                <p>
+                    Instead, the application shows the message:
+                </p>
+
+                <pre><code>
+Arrr, ye've got no hook, ye scallywag!
+</code></pre>
+
+                <figure>
+                    <img src="../../files/images/CaptainNohook/arroy.png" class="img-medium" alt="App shows a message">
+                    <figcaption>Fig.4 – ye scallywag.</figcaption>
+                </figure>
+                <p>
+                    This clearly suggests that the application expects some form of
+                    <strong>runtime hook</strong> to be present.
+                </p>
+
+
+                <h3>Searching for the Flag Function</h3>
+
+                <p>
+                    The next step was searching for functions containing the word
+                    <code>flag</code>.
+                </p>
+
+                <p>
+                    This led to the discovery of a method named:
+                </p>
+
+                <pre><code>
+whereIsflag
+</code></pre>
+
+                <figure>
+                    <img src="../../files/images/CaptainNohook/flag-method.png" class="img-medium" alt="Flag methods">
+                    <figcaption>Fig.5 – Where is flag?.</figcaption>
+                </figure>
+                <p>
+                    To observe its execution, the following trace was used:
+                </p>
+
+                <pre><code class="language-bash">
+frida-trace -U -f "com.mobilehackinglab.Captain-Nohook" \
+-i "*failedChecks*" \
+-i "*whereIsflag*"
+</code></pre>
+
+                <p>
+                    Even after tracing this method, the flag was still not visible in the UI.
+                </p>
+
+
+                <h3>Inspecting UILabel</h3>
+
+                <p>
+                    Since this is an iOS application using <strong>UIKit</strong>, any text
+                    displayed on screen will likely pass through <code>UILabel</code>.
+                </p>
+
+                <p>
+                    Therefore the following Objective-C method was traced:
+                </p>
+
+                <pre><code class="language-bash">
+frida-trace -U -f "com.mobilehackinglab.Captain-Nohook" \
+-i "*failedChecks*" \
+-i "*whereIsflag*" \
+-m "-[UILabel setText:]"
+</code></pre>
+
+                <p>
+                    This allows interception of every call where text is assigned to a label.
+                </p>
+
+                <h3>Logging UILabel Text</h3>
+
+                <p>
+                    The generated handler was modified to log the text assigned to labels.
+                </p>
+
+                <pre><code class="language-javascript">
+defineHandler({
+  onEnter(log, args, state) {
+    try {
+      const label = new ObjC.Object(args[0]);
+      const text  = new ObjC.Object(args[2]);
+      log("UILabel(" + label + ") text -> " + text.toString());
+    } catch (e) {
+      log("UILabel setText (non-ObjC?): " + args[2]);
+    }
+  }
+});
+</code></pre>
+
+                <p>
+                    This revealed something interesting: the flag was being generated
+                    internally but never shown on screen.
+                </p>
+
+                <p>
+                    Instead, the text was visible only in the Frida logs.
+                </p>
+
+                <figure>
+                    <img src="../../files/images/CaptainNohook/flag-no-trace.png" class="img-large" alt="Flag no trace">
+                    <figcaption>Fig.6 – I got you but not in my screen.</figcaption>
+                </figure>
+                <p>
+
+                <h3>Forcing the Flag to Appear</h3>
+
+                <p>
+                    To make the flag visible in the interface, another handler was modified,
+                    this time targeting view visibility.
+                </p>
+
+                <pre><code class="language-javascript">
+defineHandler({
+  onEnter(log, args, state) {
+
+    const view = new ObjC.Object(args[0]);
+
+    if (view.$className === "UILabel") {
+      log("Forcing UILabel visible: " + view);
+      args[2] = ptr("0");
+    }
+  }
+});
+</code></pre>
+
+                <p>
+                    This forces the property:
+                </p>
+
+                <pre><code>
+hidden = NO
+</code></pre>
+
+                <p>
+                    Which ensures the label containing the flag cannot be hidden by the
+                    application.
+                </p>
+
+
+                <h3>Final Result</h3>
+
+                <p>
+                    After applying these modifications, the application finally displays the
+                    flag directly on the screen:
+                </p>
+
+                <figure>
+                    <img src="../../files/images/CaptainNohook/flag-no-app-frida-trca.png" class="img-large" alt="Flag no trace">
+                    <figcaption>Fig.7 – Got it!.</figcaption>
+                </figure>
+
+     
+
+                <h3>Conclusion</h3>
+
+                <p>
+                    This challenge demonstrates how runtime instrumentation tools such as
+                    <strong>Frida</strong> can be used to:
+                </p>
+
+                <ul>
+                    <li>bypass anti-reverse-engineering protections</li>
+                    <li>intercept internal application logic</li>
+                    <li>observe hidden UI behavior</li>
+                    <li>manipulate runtime values</li>
+                </ul>
+
+                <p>
+                    Sometimes the flag isn't hidden in memory — it's simply hidden from the
+                    interface.
+                </p>
+
+                <p><strong>Happy Hacking.</strong> 🏴‍☠️</p>
+
+                <div class="post-footer-block">
+                    <h2>References</h2>
+
+                    <ul>
+                        <li><a href="https://github.com/n3k00n3/Frida-Labs-PT" target="_blank">Intrumentation</a></li>
+                        <li><a href="https://frida.re/docs/frida-trace/" target="_blank">Frida Trace</a></li>
+                        <li><a href="https://developer.apple.com/documentation/uikit/uilabel" target="_blank">UIKit Label</a></li>
+                        <li><a href="https://developer.apple.com/documentation/uikit" target="_blank">UIKit</a></li>
+                    </ul>
+
+                    <p class="hack-the-planet">Hack The Planet!</p>
+                </div>
+
+            </article>
+        </main>
+
+        <footer>
+            <span>© n3k00n3 – happy hunting.</span>
+            <span>
+                <a href="https://github.com/n3k00n3" target="_blank">github</a>
+            </span>
+        </footer>
+
+    </div>
+
+    <script src="https://unpkg.com/prismjs@1.29.0/prism.min.js"></script>
+    <script src="https://unpkg.com/prismjs@1.29.0/components/prism-javascript.min.js"></script>
+    <script src="https://unpkg.com/prismjs@1.29.0/components/prism-bash.min.js"></script>
+
+</body>
+
+</html>
